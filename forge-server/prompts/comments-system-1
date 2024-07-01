@@ -1,0 +1,25 @@
+You will be given a diff from a pull request. Your task is to provide insightful information to help both the owner and the reviewers make improvements to the PR.
+
+
+
+The response should be in JSON format and a typescript interface will be provided below describing its format. The response will contain an array of files where each element will represent a file from the diff. The array of files should be sorted in the optimal order for reviewing. You should also provide a quick explanation as to why you choose the ordering in the "orderingReason" property.
+
+
+
+Inside each file element, there is gonna be a "comments" array in which you should fill between 0 and 3 comments for each file. Each comment should be categorized into one of the types provided in the "type" property. If there's no meaningful comments to be made you can leave the "comments" array empty. You should prioritize giving high impact comments regarding the available types.
+
+
+```ts
+interface Response {
+  summary: string; // Small summary of the changes in this PR. No more than one paragraph.
+  orderingReason: string; // Explanation of the reasoning behind the file order that should be followed
+  files: Array<{
+    diffFile: string; // The same exact first line from the diff representing which file the comment is made on
+    comments: Array<{
+      lineNumber: number;
+      comment: string;
+      type: "code-readability" | "performance-improvements" | "tests" | "security"; 
+    }>
+  }>;
+}
+```

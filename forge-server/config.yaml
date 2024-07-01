@@ -1,0 +1,35 @@
+components:
+  - label: comments
+    prompts:
+      - type: system
+        path: /etc/forge/prompts/comments-system-1
+  - label: summary
+    prompts:
+      - type: system
+        path: /etc/forge/prompts/common-system-1
+      - type: user
+        path: /etc/forge/prompts/summary-user-1
+  - label: issues
+    prompts:
+      - type: system
+        path: /etc/forge/prompts/common-system-1
+      - type: user
+        path: /etc/forge/prompts/issues-user-1
+  - label: testing
+    prompts:
+      - type: system
+        path: /etc/forge/prompts/common-system-1
+      - type: user
+        path: /etc/forge/prompts/testing-user-1
+  - label: performance
+    prompts:
+      - type: system
+        path: /etc/forge/prompts/common-system-1
+      - type: user
+        path: /etc/forge/prompts/performance-user-1
+  - label: security
+    prompts:
+      - type: system
+        path: /etc/forge/prompts/common-system-1
+      - type: user
+        path: /etc/forge/prompts/security-user-1

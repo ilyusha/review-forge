@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forge-server
+spec:
+  selector:
+    matchLabels:
+      app: forge-server
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: forge-server
+    spec:
+      containers:
+      - name: forge-server
+        image: gcr.io/indicative-sandbox/forge-server:latest
+        command:
+          - gunicorn
+          - --workers
+          - "2"
+          - --bind
+          - 0.0.0.0:8080
+          - wsgi:app
+        ports:
+        - name: http
+          containerPort: 8080
+        env:
+          - name: OPENAI_ORG_ID
+            valueFrom:
+              secretKeyRef:
+                name: openai-creds
+                key: org
+          - name: OPENAI_PROJECT_ID
+            valueFrom:
+              secretKeyRef:
+                name: openai-creds
+                key: project
+          - name: OPENAI_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: openai-creds
+                key: api-key
+          - name: REDIS_HOST
+            value: 10.47.80.3
+          - name: FORGE_CONFIG_FILE
+            value: /etc/forge/config.yaml
+        volumeMounts:
+        - name: forge-config
+          mountPath: /etc/forge
+        - name: prompts
+          mountPath: /etc/forge/prompts
+      imagePullSecrets:
+        - name: gcr-json-key
+      volumes:
+        - name: prompts
+          configMap:
+            name: prompts
+        - name: forge-config
+          configMap:
+            name: forge-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forge-server
+  labels:
+    name: forge-server
+spec:
+  type: LoadBalancer
+  selector:
+    app: forge-server
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080

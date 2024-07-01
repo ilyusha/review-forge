@@ -1,0 +1,123 @@
+from abc import ABC, abstractmethod
+from typing import List
+import yaml, pprint, os
+
+ENV_CONFIG_FILE = "FORGE_CONFIG_FILE"
+
+class Msg(object):
+
+	def __init__(self, role, content):
+		self.role = role
+		self.content = content
+
+	def to_json(self):
+		return {"role": self.role, "content": self.content}
+
+
+class SystemMsg(Msg):
+
+	def __init__(self, prompt):
+		super().__init__("system", prompt)
+
+
+class UserMsg(Msg):
+
+	def __init__(self, prompt):
+		super().__init__("user", prompt)
+
+
+class AnalysisComponent(ABC):
+
+
+	@abstractmethod
+	def get_system_messages(self) -> List[str]:
+		pass
+
+	@abstractmethod
+	def get_user_messages(self, prompt) -> List[str]:
+		pass
+
+	@abstractmethod
+	def get_label(self):
+		pass
+
+	@property
+	def label(self):
+		return self.get_label()
+
+	def build_messages(self, prompt) -> List[Msg]:
+		messages = []
+		messages.extend([SystemMsg(msg).to_json() for msg in self.get_system_messages()])
+		messages.extend([UserMsg(msg).to_json() for msg in self.get_user_messages(prompt)])
+		return messages
+
+
+class YamlComponent(AnalysisComponent):
+
+	def __init__(self, spec):
+
+		self._label = spec['label']
+		self.system_prompts = []
+		self.user_prompts = []
+		for prompt_spec in spec['prompts']:
+			self.confgure_prompt(prompt_spec)
+
+	def confgure_prompt(self, prompt_spec: dict):
+		prompt_type = prompt_spec['type']
+		prompt_path = prompt_spec['path']
+		description = prompt_spec.get('description')
+		dest_list = self.system_prompts if prompt_type == "system" else self.user_prompts
+		self._load_prompt(prompt_path, dest_list)
+		if description:
+			print(f"added {prompt_type} prompt '{description}' for component '{self.label}'")
+		else:
+			print(f"added {prompt_type} prompt for component '{self.label}'")
+
+
+	def _load_prompt(self, path, dest_list):
+		with open(path, "r") as f:
+			contents = f.read()
+			dest_list.append(contents)
+
+	def get_label(self):
+		return self._label
+
+	def get_system_messages(self):
+		return self.system_prompts
+
+	def get_user_messages(self, prompt):
+		messages = []
+		messages.extend(self.user_prompts)
+		messages.append(prompt)
+		return messages
+
+
+
+class ComponentLoader(object):
+
+	def __init__(self, config_file = None):
+		if not config_file:
+			config_file = os.getenv(ENV_CONFIG_FILE)
+			if not config_file:
+				raise Exception(f"{ENV_CONFIG_FILE} not set")
+		with open(config_file, "r") as f:
+			config = yaml.safe_load(f)
+			self.components = config['components']
+			print(f"loaded configuration for {len(self.components)} components")
+			pprint.pprint(self.components)
+
+	def build_components(self) -> List[AnalysisComponent]:
+		return [YamlComponent(spec) for spec in self.components]
+
+
+class ComponentRegistry(object):
+
+	def __init__(self):
+		self.all_components = ComponentLoader().build_components()
+		self.by_label = {component.label: component for component in self.all_components}
+
+	def get(self, label):
+		return self.by_label.get(label)
+
+	def labels(self):
+		return sorted(list(self.by_label.keys()))

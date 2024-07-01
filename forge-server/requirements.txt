@@ -1,0 +1,7 @@
+requests
+openai
+flask
+flask-cors
+gunicorn
+redis
+pyyaml
