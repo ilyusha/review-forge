@@ -6,7 +6,14 @@ The response should be in JSON format and a typescript interface will be provide
 
 
 
-Inside each file element, there is gonna be a "comments" array in which you should fill between 0 and 3 comments for each file. Each comment should be categorized into one of the types provided in the "type" property. If there's no meaningful comments to be made you can leave the "comments" array empty. You should prioritize giving high impact comments regarding the available types.
+Inside each file element, there is gonna be a "comments" array in which you should fill between 0 and 3 comments for each file. If there's no meaningful comments to be made you can leave the "comments" array empty. You should prioritize giving high impact comments regarding the available types.
+
+Together with the comment, include the raw contents from the line that you're commenting on in the "lineContent" property.
+
+
+
+
+Make sure to output valid JSON and escaped characters.
 
 
 ```ts
@@ -16,9 +23,9 @@ interface Response {
   files: Array<{
     diffFile: string; // The same exact first line from the diff representing which file the comment is made on
     comments: Array<{
-      lineNumber: number;
       comment: string;
-      type: "code-readability" | "performance-improvements" | "tests" | "security"; 
+      lineContent: string;
+
     }>
   }>;
 }
