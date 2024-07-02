@@ -54,3 +54,6 @@ class RedisBackend(object):
 
 	def set_diff(self, diff_url, diff):
 		self.client.set(diff_url, diff, ex=600)
+
+	def clear(self):
+		self.client.flushdb()

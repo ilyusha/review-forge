@@ -96,5 +96,11 @@ def get_diff():
 def get_components():
 	return component_registry.labels(), 200
 
+
+@app.route("/clear-cache", methods=["POST"])
+def clear_cache():
+	state_provider.clear()
+	return "OK", 200
+
 if __name__ == "__main__":
     app.run(debug=True)
