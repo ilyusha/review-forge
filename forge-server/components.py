@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
-import yaml, pprint, os
+import yaml, pprint, os, hashlib
 
 class Msg(object):
 
@@ -43,10 +43,10 @@ class AnalysisComponent(ABC):
 	def label(self):
 		return self.get_label()
 
-	def build_messages(self, prompt) -> List[Msg]:
+	def build_messages(self, diff) -> List[Msg]:
 		messages = []
 		messages.extend([SystemMsg(msg).to_json() for msg in self.get_system_messages()])
-		messages.extend([UserMsg(msg).to_json() for msg in self.get_user_messages(prompt)])
+		messages.extend([UserMsg(msg).to_json() for msg in self.get_user_messages(diff)])
 		return messages
 
 
@@ -83,10 +83,33 @@ class YamlComponent(AnalysisComponent):
 	def get_system_messages(self):
 		return self.system_prompts
 
-	def get_user_messages(self, prompt):
+	def get_user_messages(self, diff):
 		messages = []
 		messages.extend(self.user_prompts)
-		messages.append(prompt)
+		messages.append(diff)
+		return messages
+
+
+class UserInputComponent(AnalysisComponent):
+
+	def __init__(self, user_input: str):
+		self.user_input = user_input
+		self.input_hash = hashlib.md5(self.user_input.encode('utf-8')).hexdigest()
+
+	def get_label(self):
+		return f"custom-{self.input_hash}"
+
+	def get_system_messages(self):
+		return ["You are a professional software developer"]
+
+	def get_user_messages(self, diff):
+		messages = []
+		messages.append("""
+			You will be given a question posed by a code reviewer.
+			The message after that will be the diff that the question pertains to.
+			Please answer the question to the best of your ability.
+			Please return the response in markdown format, and be succinct if possible""")
+		messages.extend([self.user_input, diff])
 		return messages
 
 

@@ -5,7 +5,7 @@ import flask_cors
 from flask_cors import CORS, cross_origin
 from config import ForgeConfig
 from pr_analyzer import PullRequestAnalyzer, download_diff
-from components import ComponentRegistry
+from components import ComponentRegistry, UserInputComponent
 from state import PRState, RedisBackend
 
 app = Flask(__name__)
@@ -68,7 +68,6 @@ def analyze_comments():
 	analysis_state = _analyze(pr_url, [component], refresh=_is_refresh())
 	response_object = json.loads(analysis_state.get("comments"))
 	return response_object, 200
-	
 
 
 @app.route("/analyze/<component_name>")
@@ -82,7 +81,6 @@ def analyze_component(component_name):
 	analysis_state =_analyze(pr_url, [component], refresh=_is_refresh())
 	component_result = analysis_state.get(component_name)
 	return component_result, 200
-
 
 
 @app.route("/diff")
@@ -103,6 +101,23 @@ def get_components():
 def clear_cache():
 	state_provider.clear()
 	return "OK", 200
+
+
+@app.route("/custom", methods=["POST"])
+def analyze_custom():
+	pr_url = _get_url()
+	if not pr_url:
+		return "missing required 'url' parameter", 400
+		
+	try:
+		prompt = request.json.get('prompt')
+	except Exception as e:
+		return "missing prompt", 400
+	component = UserInputComponent(prompt)
+	analysis_state =_analyze(pr_url, [component], refresh=_is_refresh())
+	component_result = analysis_state.get(component.label)
+	return component_result, 200
+
 
 if __name__ == "__main__":
     app.run(debug=True)
