@@ -33,3 +33,5 @@ components:
         path: /etc/forge/prompts/common-system-1
       - type: user
         path: /etc/forge/prompts/security-user-1
+gpt:
+  model: gpt-3.5-turbo

@@ -33,3 +33,5 @@ components:
         path: prompts/common-system-1
       - type: user
         path: prompts/security-user-1
+gpt:
+  model: gpt-4o

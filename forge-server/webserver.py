@@ -1,18 +1,20 @@
+import pprint, json, requests, asyncio
+from typing import List
 from flask import Flask, request
 import flask_cors
 from flask_cors import CORS, cross_origin
-import pprint, json, requests, asyncio
+from config import ForgeConfig
 from pr_analyzer import PullRequestAnalyzer, download_diff
-from components import ComponentLoader, ComponentRegistry
+from components import ComponentRegistry
 from state import PRState, RedisBackend
-from typing import List
 
 app = Flask(__name__)
 
 cors = CORS(app)
 
-component_registry = ComponentRegistry()
-analyzer = PullRequestAnalyzer()
+config = ForgeConfig()
+component_registry = ComponentRegistry(config)
+analyzer = PullRequestAnalyzer(config)
 state_provider = RedisBackend()
 
 

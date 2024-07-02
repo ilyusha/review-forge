@@ -24,7 +24,7 @@ def _strip_code_block(content):
 
 class AIClient(object):
 
-	def __init__(self, organization=None, project=None, api_key=None):
+	def __init__(self, organization=None, project=None, api_key=None, model="gpt-3.5-turbo", **kwargs):
 		if not organization:
 			organization = _get_env(ENV_OPENAI_ORG_ID)
 		if not project:
@@ -32,10 +32,12 @@ class AIClient(object):
 		if not api_key:
 			api_key = _get_env(ENV_OPENAI_API_KEY)
 		self.client = OpenAI(organization=organization, project=project, api_key=api_key)
+		print(f"USING MODEL {model}")
+		self.model = model
 
 	def _build_request(self, prompt, analysis_component):
 		return {
-			"model": "gpt-3.5-turbo",
+			"model": self.model,
 			"messages": analysis_component.build_messages(prompt)
 		}
 

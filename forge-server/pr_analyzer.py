@@ -3,6 +3,7 @@ from typing import List
 import requests
 from client import AIClient
 from components import AnalysisComponent
+from config import ForgeConfig
 
 
 def download_diff(diff_url):
@@ -19,10 +20,10 @@ def _do_request(client, diff, component, results_list):
 
 class PullRequestAnalyzer(object):
 
-	def __init__(self, client: AIClient = None):
+	def __init__(self, config: ForgeConfig, client: AIClient = None):
 		if not client:
 			print("initializing default OpenAI client")
-			client = AIClient()
+			client = AIClient(**config.gpt_config)
 		self.client = client
 
 

@@ -2,8 +2,6 @@ from abc import ABC, abstractmethod
 from typing import List
 import yaml, pprint, os
 
-ENV_CONFIG_FILE = "FORGE_CONFIG_FILE"
-
 class Msg(object):
 
 	def __init__(self, role, content):
@@ -92,28 +90,10 @@ class YamlComponent(AnalysisComponent):
 		return messages
 
 
-
-class ComponentLoader(object):
-
-	def __init__(self, config_file = None):
-		if not config_file:
-			config_file = os.getenv(ENV_CONFIG_FILE)
-			if not config_file:
-				raise Exception(f"{ENV_CONFIG_FILE} not set")
-		with open(config_file, "r") as f:
-			config = yaml.safe_load(f)
-			self.components = config['components']
-			print(f"loaded configuration for {len(self.components)} components")
-			pprint.pprint(self.components)
-
-	def build_components(self) -> List[AnalysisComponent]:
-		return [YamlComponent(spec) for spec in self.components]
-
-
 class ComponentRegistry(object):
 
-	def __init__(self):
-		self.all_components = ComponentLoader().build_components()
+	def __init__(self, config):
+		self.all_components = [YamlComponent(spec) for spec in config.components]
 		self.by_label = {component.label: component for component in self.all_components}
 
 	def get(self, label):
