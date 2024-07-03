@@ -17,10 +17,6 @@ spec:
         image: gcr.io/indicative-sandbox/forge-server:latest
         command:
           - gunicorn
-          # - --certfile
-          # - /var/ssl/tls.crt
-          # - --keyfile
-          # - /var/ssl/tls.key
           - --workers
           - "2"
           - --bind
@@ -49,6 +45,90 @@ spec:
             value: 10.47.80.3
           - name: FORGE_CONFIG_FILE
             value: /etc/forge/config.yaml
+          - name: GITHUB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: github
+                key: token
+          - name: GITHUB_BASE_URL
+            value: https://github.com/api/v3
+          - name: FORGE_URL
+            value: https://jared-dickman.github.io/review-forge
+        volumeMounts:
+        - name: forge-config
+          mountPath: /etc/forge
+        - name: prompts
+          mountPath: /etc/forge/prompts
+      imagePullSecrets:
+        - name: gcr-json-key
+      volumes:
+        - name: prompts
+          configMap:
+            name: prompts
+        - name: forge-config
+          configMap:
+            name: forge-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forge-server-ssl
+spec:
+  selector:
+    matchLabels:
+      app: forge-server-ssl
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: forge-server-ssl
+    spec:
+      containers:
+      - name: forge-server
+        image: gcr.io/indicative-sandbox/forge-server:latest
+        command:
+          - gunicorn
+          - --certfile
+          - /var/ssl/tls.crt
+          - --keyfile
+          - /var/ssl/tls.key
+          - --workers
+          - "2"
+          - --bind
+          - 0.0.0.0:8080
+          - wsgi:app
+        ports:
+        - name: https
+          containerPort: 8080
+        env:
+          - name: OPENAI_ORG_ID
+            valueFrom:
+              secretKeyRef:
+                name: openai-creds
+                key: org
+          - name: OPENAI_PROJECT_ID
+            valueFrom:
+              secretKeyRef:
+                name: openai-creds
+                key: project
+          - name: OPENAI_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: openai-creds
+                key: api-key
+          - name: REDIS_HOST
+            value: 10.47.80.3
+          - name: FORGE_CONFIG_FILE
+            value: /etc/forge/config.yaml
+          - name: GITHUB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: github
+                key: token
+          - name: GITHUB_BASE_URL
+            value: https://github.com/api/v3
+          - name: FORGE_URL
+            value: https://jared-dickman.github.io/review-forge
         volumeMounts:
         - name: forge-config
           mountPath: /etc/forge
@@ -86,3 +166,21 @@ spec:
     port: 8080
     targetPort: 8080
   loadBalancerIP: 35.196.218.231
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forge-server-ssl
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
+  labels:
+    name: forge-server-ssl
+spec:
+  type: LoadBalancer
+  selector:
+    app: forge-server-ssl
+  ports:
+  - name: https
+    port: 8080
+    targetPort: 8080
+  loadBalancerIP: 35.231.162.91

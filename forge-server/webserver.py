@@ -1,4 +1,4 @@
-import pprint, json, requests, logging, hashlib
+import os, pprint, json, requests, logging, hashlib
 from typing import List
 from flask import Flask, request
 import flask_cors
@@ -7,6 +7,7 @@ from config import ForgeConfig
 from pr_analyzer import PullRequestAnalyzer, download_diff
 from components import ComponentRegistry, UserInputComponent
 from state import PRState, RedisBackend
+from gh import GithubClient
 
 from dataclasses import dataclass
 
@@ -21,7 +22,7 @@ config = ForgeConfig()
 component_registry = ComponentRegistry(config)
 analyzer = PullRequestAnalyzer(config)
 state_provider = RedisBackend()
-
+gh = GithubClient()
 
 @dataclass
 class DiffInfo:
@@ -128,16 +129,23 @@ def analyze_custom():
 	pr_url = _get_url()
 	if not pr_url:
 		return "missing required 'url' parameter", 400
-		
 	try:
 		prompt = request.json.get('prompt')
 	except Exception as e:
 		return "missing prompt", 400
 	component = UserInputComponent(config.user_input, prompt)
-	analysis_state =_analyze(pr_url, [component], refresh=_is_refresh())
+	diff_info = DiffInfo(pr_url, _get_diff(pr_url))
+	analysis_state =_analyze([component], diff_info, refresh=_is_refresh())
 	component_result = analysis_state.get(component.label)
 	return component_result, 200
 
+
+@app.route("/webhook", methods=["POST"])
+def github_webhook():
+	payload = request.json
+	if payload.get("action") == "opened":
+		gh.handle_webhook(payload)
+	return "OK", 200
 
 if __name__ == "__main__":
     app.run(debug=True)
