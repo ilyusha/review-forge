@@ -1,29 +1,33 @@
 from concurrent.futures import ThreadPoolExecutor, wait
 from typing import List
 import requests
-from client import AIClient
+from client import OpenAIClient
 from components import AnalysisComponent
 from config import ForgeConfig
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 def download_diff(diff_url):
-	print(f"fetching diff for {diff_url}")
+	logger.info(f"fetching diff for {diff_url}")
 	return requests.get(diff_url).content.decode("utf-8")
 
 
 def _do_request(client, diff, component, results_list):
-	print(f"sending request for {component.label}")
+	logger.info(f"sending request for {component.label}")
 	response = client.request(diff, component)
 	results_list.append((component.label, response))
-	print(f"request for {component.label} finished")
+	logger.info(f"request for {component.label} finished")
 
 
 class PullRequestAnalyzer(object):
 
-	def __init__(self, config: ForgeConfig, client: AIClient = None):
+	def __init__(self, config: ForgeConfig, client: OpenAIClient = None):
 		if not client:
-			print("initializing default OpenAI client")
-			client = AIClient(**config.gpt)
+			logger.info("initializing default OpenAI client")
+			client = OpenAIClient(**config.gpt)
 		self.client = client
 
 

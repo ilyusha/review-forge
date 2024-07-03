@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import List
-import yaml, pprint, os, hashlib
+import yaml, pprint, os, hashlib, logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 from config import ForgeConfig
 

@@ -2,12 +2,14 @@ from components import *
 from openai import OpenAI
 from abc import ABC, abstractmethod
 from typing import List
-import json, os, pprint
-
+import json, os, pprint, logging
 
 ENV_OPENAI_ORG_ID = "OPENAI_ORG_ID"
 ENV_OPENAI_PROJECT_ID = "OPENAI_PROJECT_ID"
 ENV_OPENAI_API_KEY = "OPENAI_API_KEY"
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def _get_env(var_name):
 	value = os.getenv(var_name)
@@ -22,7 +24,7 @@ def _strip_code_block(content):
 	return content
 
 
-class AIClient(object):
+class OpenAIClient(object):
 
 	def __init__(self, organization=None, project=None, api_key=None, model="gpt-3.5-turbo", **kwargs):
 		if not organization:
@@ -33,6 +35,7 @@ class AIClient(object):
 			api_key = _get_env(ENV_OPENAI_API_KEY)
 		self.client = OpenAI(organization=organization, project=project, api_key=api_key)
 		self.model = model
+		logger.info(f"using OpenAI model {self.model}")
 
 	def _build_request(self, prompt, analysis_component):
 		return {
@@ -46,4 +49,4 @@ class AIClient(object):
 			response = self.client.chat.completions.create(**request)
 			return _strip_code_block(response.choices[0].message.content)
 		except Exception as e:
-			print(e.message)
+			logger.error(e)

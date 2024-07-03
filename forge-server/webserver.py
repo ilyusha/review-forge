@@ -1,4 +1,4 @@
-import pprint, json, requests, asyncio
+import pprint, json, requests, logging
 from typing import List
 from flask import Flask, request
 import flask_cors
@@ -8,6 +8,9 @@ from pr_analyzer import PullRequestAnalyzer, download_diff
 from components import ComponentRegistry, UserInputComponent
 from state import PRState, RedisBackend
 
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 app = Flask(__name__)
 
 cors = CORS(app)
@@ -16,7 +19,6 @@ config = ForgeConfig()
 component_registry = ComponentRegistry(config)
 analyzer = PullRequestAnalyzer(config)
 state_provider = RedisBackend()
-
 
 def _get_diff(pr_url):
 	diff_url = pr_url if pr_url.endswith(".diff") else pr_url + ".diff"
@@ -31,21 +33,21 @@ def get_analysis_results(pr_url, components) -> PRState:
 	state: PRState = state_provider.get(pr_url)
 	missing_components = [component for component in components if not state.contains(component.label)]
 	if missing_components:
-		print(f"state for {pr_url} missing {[c.label for c in missing_components]}")
+		logger.info(f"state for {pr_url} missing {[c.label for c in missing_components]}")
 		diff = _get_diff(pr_url)
 		response = analyzer.analyze_pr(diff, missing_components)
 		for label, data in response:
 			state.add(label, data)
 		state_provider.set(state)
 	else:
-		print(f"all required state for {pr_url} exists")
+		logger.info(f"all required state for {pr_url} exists")
 
 	return state
 
 
 def _analyze(pr_url, components, refresh=False):
 	if refresh:
-		print(f"clearing state for {pr_url}")
+		logger.info(f"clearing state for {pr_url}")
 		state_provider.delete(pr_url, [c.label for c in components])
 	return get_analysis_results(pr_url, components)
 
