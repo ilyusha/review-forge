@@ -17,6 +17,10 @@ spec:
         image: gcr.io/indicative-sandbox/forge-server:latest
         command:
           - gunicorn
+          # - --certfile
+          # - /var/ssl/tls.crt
+          # - --keyfile
+          # - /var/ssl/tls.key
           - --workers
           - "2"
           - --bind
@@ -50,6 +54,8 @@ spec:
           mountPath: /etc/forge
         - name: prompts
           mountPath: /etc/forge/prompts
+        - name: tls
+          mountPath: /var/ssl/
       imagePullSecrets:
         - name: gcr-json-key
       volumes:
@@ -59,11 +65,16 @@ spec:
         - name: forge-config
           configMap:
             name: forge-config
+        - name: tls
+          secret:
+            secretName: forge-tls
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: forge-server
+  annotations:
+    cloud.google.com/neg: '{"ingress": true}'
   labels:
     name: forge-server
 spec:
@@ -74,3 +85,4 @@ spec:
   - name: http
     port: 8080
     targetPort: 8080
+  loadBalancerIP: 35.196.218.231
