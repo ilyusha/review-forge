@@ -32,7 +32,6 @@ class AIClient(object):
 		if not api_key:
 			api_key = _get_env(ENV_OPENAI_API_KEY)
 		self.client = OpenAI(organization=organization, project=project, api_key=api_key)
-		print(f"USING MODEL {model}")
 		self.model = model
 
 	def _build_request(self, prompt, analysis_component):

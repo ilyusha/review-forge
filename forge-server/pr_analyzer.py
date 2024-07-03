@@ -23,7 +23,7 @@ class PullRequestAnalyzer(object):
 	def __init__(self, config: ForgeConfig, client: AIClient = None):
 		if not client:
 			print("initializing default OpenAI client")
-			client = AIClient(**config.gpt_config)
+			client = AIClient(**config.gpt)
 		self.client = client
 
 

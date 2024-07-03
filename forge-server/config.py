@@ -12,4 +12,5 @@ class ForgeConfig(object):
 		with open(config_file, "r") as f:
 			config = yaml.safe_load(f)
 			self.components = config['components']
-			self.gpt_config = config.get('gpt', {})
+			self.gpt = config.get('gpt', {})
+			self.user_input = config.get("user_input")

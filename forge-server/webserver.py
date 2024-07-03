@@ -113,7 +113,7 @@ def analyze_custom():
 		prompt = request.json.get('prompt')
 	except Exception as e:
 		return "missing prompt", 400
-	component = UserInputComponent(prompt)
+	component = UserInputComponent(config.user_input, prompt)
 	analysis_state =_analyze(pr_url, [component], refresh=_is_refresh())
 	component_result = analysis_state.get(component.label)
 	return component_result, 200
