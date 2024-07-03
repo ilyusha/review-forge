@@ -30,7 +30,7 @@ components:
   - label: security
     prompts:
       - type: system
-        path: /etc/forge/prompts/common-system-1
+        path: /etc/forge/prompts/security-system-1
       - type: user
         path: /etc/forge/prompts/security-user-1
 user_input:

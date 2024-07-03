@@ -30,7 +30,7 @@ components:
   - label: security
     prompts:
       - type: system
-        path: prompts/common-system-1
+        path: prompts/security-system-1
       - type: user
         path: prompts/security-user-1
 user_input:
