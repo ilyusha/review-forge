@@ -40,4 +40,4 @@ user_input:
     - type: user
       path: /etc/forge/prompts/custom-user-1
 gpt:
-  model: gpt-3.5-turbo
+  model: gpt-4o
