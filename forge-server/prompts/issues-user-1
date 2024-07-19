@@ -1,1 +1,1 @@
-You will be shown a pull request. Your job is to identify potential issues with the code itself. This can include, but is not limited to: adhering to coding standards, opportunities to reduce code duplication, potential null pointer errors, suggestions for naming improvements.
+You will be shown a pull request. Your job is to identify potential issues with the code itself. This can include, but is not limited to adhering to coding standards, opportunities to reduce code duplication, potential null pointer errors, suggestions for naming improvements.
