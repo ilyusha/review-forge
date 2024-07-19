@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 from typing import List
 import json, os, pprint, logging
 
-ENV_OPENAI_ORG_ID = "OPENAI_ORG_ID"
-ENV_OPENAI_PROJECT_ID = "OPENAI_PROJECT_ID"
 ENV_OPENAI_API_KEY = "OPENAI_API_KEY"
 
 logging.basicConfig(level=logging.DEBUG)
@@ -26,14 +24,10 @@ def _strip_code_block(content):
 
 class OpenAIClient(object):
 
-	def __init__(self, organization=None, project=None, api_key=None, model="gpt-3.5-turbo", **kwargs):
-		if not organization:
-			organization = _get_env(ENV_OPENAI_ORG_ID)
-		if not project:
-			project = _get_env(ENV_OPENAI_PROJECT_ID)
+	def __init__(self, api_key=None, model="gpt-3.5-turbo", **kwargs):
 		if not api_key:
 			api_key = _get_env(ENV_OPENAI_API_KEY)
-		self.client = OpenAI(organization=organization, project=project, api_key=api_key)
+		self.client = OpenAI(api_key=api_key)
 		self.model = model
 		logger.info(f"using OpenAI model {self.model}")
 

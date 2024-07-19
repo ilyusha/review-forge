@@ -26,16 +26,6 @@ spec:
         - name: http
           containerPort: 8080
         env:
-          - name: OPENAI_ORG_ID
-            valueFrom:
-              secretKeyRef:
-                name: openai-creds
-                key: org
-          - name: OPENAI_PROJECT_ID
-            valueFrom:
-              secretKeyRef:
-                name: openai-creds
-                key: project
           - name: OPENAI_API_KEY
             valueFrom:
               secretKeyRef:
@@ -101,16 +91,6 @@ spec:
         - name: https
           containerPort: 8080
         env:
-          - name: OPENAI_ORG_ID
-            valueFrom:
-              secretKeyRef:
-                name: openai-creds
-                key: org
-          - name: OPENAI_PROJECT_ID
-            valueFrom:
-              secretKeyRef:
-                name: openai-creds
-                key: project
           - name: OPENAI_API_KEY
             valueFrom:
               secretKeyRef:
